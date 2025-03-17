@@ -1,12 +1,33 @@
 package com.shaihi.note_app;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "contacts")
 public class Contact {
     @PrimaryKey(autoGenerate = true)
     private int id;
+
+    public Contact() {
+    }
+    @Ignore
+    public Contact(String firstName, String lastName, String address, String phoneNumber) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String toString(){
+        return "Contact{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", address='" + address + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                '}';
+    }
 
     public int getId() {
         return id;
