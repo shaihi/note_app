@@ -19,6 +19,9 @@ public class MainActivity extends AppCompatActivity {
     Button btnAdd;
     EditText etFirstName, etLastName, etAddress, etPhone;
     RecyclerView rv;
+    contactsAdapter adapter;
+    ContactDAO contactDAO;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,10 +40,10 @@ public class MainActivity extends AppCompatActivity {
         rv = findViewById(R.id.rvContacts);
         rv.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         ContactsDatabase db = ContactsDatabase.getInstance(this);
-        ContactDAO contactDAO = db.contactDAO();
+        contactDAO = db.contactDAO();
         List<Contact> contacts = contactDAO.getAllContacts();
         Log.d("ContactApp", "total contacts: " + contacts.size());
-        contactsAdapter adapter = new contactsAdapter(contactDAO.getAllContacts(), this);
+        adapter = new contactsAdapter(contactDAO.getAllContacts(), this);
         rv.setAdapter(adapter);
         btnAdd.setOnClickListener(v -> {
             String firstName = etFirstName.getText().toString();

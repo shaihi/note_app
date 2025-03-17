@@ -1,6 +1,7 @@
 package com.shaihi.note_app;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,12 @@ import java.util.List;
 public class contactsAdapter extends RecyclerView.Adapter<contactsAdapter.ViewHolder> {
     private List<Contact> contactsList;
     private Context context;
+    private ContactDAO contactDAO;
 
     public contactsAdapter(List<Contact> contactsList, Context context) {
         this.contactsList = contactsList;
         this.context = context;
+        this.contactDAO = ContactsDatabase.getInstance(context).contactDAO();
     }
 
     @Override
@@ -28,6 +31,17 @@ public class contactsAdapter extends RecyclerView.Adapter<contactsAdapter.ViewHo
     public void addContact(Contact contact) {
         contactsList.add(contact);
         notifyItemInserted(contactsList.size() - 1);
+        Log.d("ContactApp", "Contact added: " + contact.toString());
+    }
+
+    public void removeContact(int position) {
+        Contact contact = contactsList.get(position);
+        // Delete from database
+        contactDAO.delete(contact);
+        // Remove from RecyclerView
+        contactsList.remove(position);
+        notifyItemRemoved(position);
+        Log.d("ContactApp", "Contact removed: " + contact.toString());
     }
 
     @Override
@@ -37,6 +51,16 @@ public class contactsAdapter extends RecyclerView.Adapter<contactsAdapter.ViewHo
         holder.lastName.setText(contact.getLastName());
         holder.address.setText(contact.getAddress());
         holder.phoneNumber.setText(contact.getPhoneNumber());
+
+        Log.d("ContactApp", "Binding contact: " + contact.toString());
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                removeContact(holder.getAdapterPosition());
+                return true;
+            }
+        });
     }
 
     @Override
