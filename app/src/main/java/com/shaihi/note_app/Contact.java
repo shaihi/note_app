@@ -8,6 +8,10 @@ import androidx.room.PrimaryKey;
 public class Contact {
     @PrimaryKey(autoGenerate = true)
     private int id;
+    private String firstName;
+    private String lastName;
+    private String address;
+    private String phoneNumber;
 
     public Contact() {
     }
@@ -68,9 +72,4 @@ public class Contact {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-
-    private String firstName;
-    private String lastName;
-    private String address;
-    private String phoneNumber;
 }

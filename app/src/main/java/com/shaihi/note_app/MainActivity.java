@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     EditText etFirstName, etLastName, etAddress, etPhone;
     ListView listView;
     ContactDAO contactDAO;
-    List<String> contactIds;
+    ArrayList<String> contactIds;
     ArrayAdapter<String> adapter;
     List<Contact> contactsList;
 
@@ -47,20 +47,21 @@ public class MainActivity extends AppCompatActivity {
 
         ContactsDatabase db = ContactsDatabase.getInstance(this);
         contactDAO = db.contactDAO();
-        contactsList = contactDAO.getAllContacts();
-        // Extract IDs for display
         contactIds = new ArrayList<>();
+        contactsList = contactDAO.getAllContacts();
+        // Populate the list with IDs
         for (Contact c : contactsList) {
             contactIds.add(String.valueOf(c.getId()));
         }
         Log.d("ContactApp", "total contactsList: " + contactsList.size());
         // Adapter to show IDs
         adapter = new ArrayAdapter<>(
-                this,
+                MainActivity.this,
                 R.layout.contact_item,
                 contactIds
         );
         listView.setAdapter(adapter);
+
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,6 +75,19 @@ public class MainActivity extends AppCompatActivity {
                 contact.setId(contactDAO.getLastContact().getId());
                 Log.d("ContactApp", "adding Contact: " + contact.toString());
                 contactsList.add(contact);
+
+                List<Contact> allContacts = contactDAO.getAllContacts();
+                int lastIndex = allContacts.size() - 1;
+                int id = allContacts.get(lastIndex).getId();
+
+                int id1 = -1;
+                for(Contact c: allContacts){
+                    int latestid = c.getId();
+                    if (latestid > id1){
+                        id1 = latestid;
+                    }
+                }
+
                 contactIds.add(String.valueOf(contact.getId()));
                 adapter.notifyDataSetChanged();
                 etFirstName.setText("");
