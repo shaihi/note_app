@@ -15,6 +15,10 @@ public interface ContactDAO {
     @Delete
     void delete(Contact contact);
 
+    // get the latest entry
+    @Query("SELECT * FROM contacts ORDER BY id DESC LIMIT 1")
+    Contact getLastContact();
+
     @Query("SELECT * FROM contacts")
     List<Contact> getAllContacts();
 }

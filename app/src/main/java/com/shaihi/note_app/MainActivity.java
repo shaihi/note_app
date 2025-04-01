@@ -2,25 +2,31 @@ package com.shaihi.note_app;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     Button btnAdd;
     EditText etFirstName, etLastName, etAddress, etPhone;
-    RecyclerView rv;
-    contactsAdapter adapter;
+    ListView listView;
     ContactDAO contactDAO;
+    List<String> contactIds;
+    ArrayAdapter<String> adapter;
+    List<Contact> contactsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,28 +43,74 @@ public class MainActivity extends AppCompatActivity {
         etLastName = findViewById(R.id.etLastName);
         etAddress = findViewById(R.id.etAddress);
         etPhone = findViewById(R.id.etPhone);
-        rv = findViewById(R.id.rvContacts);
-        rv.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        listView = findViewById(R.id.lvContacts);
+
         ContactsDatabase db = ContactsDatabase.getInstance(this);
         contactDAO = db.contactDAO();
-        List<Contact> contacts = contactDAO.getAllContacts();
-        Log.d("ContactApp", "total contacts: " + contacts.size());
-        adapter = new contactsAdapter(contactDAO.getAllContacts(), this);
-        rv.setAdapter(adapter);
-        btnAdd.setOnClickListener(v -> {
-            String firstName = etFirstName.getText().toString();
-            String lastName = etLastName.getText().toString();
-            String address = etAddress.getText().toString();
-            String phoneNumber = etPhone.getText().toString();
+        contactsList = contactDAO.getAllContacts();
+        // Extract IDs for display
+        contactIds = new ArrayList<>();
+        for (Contact c : contactsList) {
+            contactIds.add(String.valueOf(c.getId()));
+        }
+        Log.d("ContactApp", "total contactsList: " + contactsList.size());
+        // Adapter to show IDs
+        adapter = new ArrayAdapter<>(
+                this,
+                R.layout.contact_item,
+                contactIds
+        );
+        listView.setAdapter(adapter);
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String firstName = etFirstName.getText().toString();
+                String lastName = etLastName.getText().toString();
+                String address = etAddress.getText().toString();
+                String phoneNumber = etPhone.getText().toString();
 
-            Contact contact = new Contact(firstName, lastName, address, phoneNumber);
-            Log.d("ContactApp", "adding Contact: " + contact.toString());
-            contactDAO.insert(contact);
-            adapter.addContact(contact);
-            etFirstName.setText("");
-            etLastName.setText("");
-            etAddress.setText("");
-            etPhone.setText("");
+                Contact contact = new Contact(firstName, lastName, address, phoneNumber);
+                contactDAO.insert(contact);
+                contact.setId(contactDAO.getLastContact().getId());
+                Log.d("ContactApp", "adding Contact: " + contact.toString());
+                contactsList.add(contact);
+                contactIds.add(String.valueOf(contact.getId()));
+                adapter.notifyDataSetChanged();
+                etFirstName.setText("");
+                etLastName.setText("");
+                etAddress.setText("");
+                etPhone.setText("");
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Show contact details
+                Contact contact = contactsList.get(position);
+                etFirstName.setText(contact.getFirstName());
+                etLastName.setText(contact.getLastName());
+                etAddress.setText(contact.getAddress());
+                etPhone.setText(contact.getPhoneNumber());
+            }
+        });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // Remove from DB
+                Contact toDelete = contactsList.get(position);
+                contactDAO.delete(toDelete);
+                Log.d("ContactApp", "Deleting contact: " + toDelete.toString());
+
+                // Remove from both lists
+                contactsList.remove(position);
+                contactIds.remove(position);
+
+                // Refresh UI
+                adapter.notifyDataSetChanged();
+                return true;
+            }
         });
     }
 }
